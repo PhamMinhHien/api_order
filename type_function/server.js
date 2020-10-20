@@ -6,17 +6,14 @@ var schema = require('./schema.js')
 var root = require('./root.js')
 
 
+// Đại diện cho 1 link trên domain - gồm nhiều route con ( get , post )
 app.use('/graphql', graphqlHTTP({
   schema: buildSchema(schema),
   rootValue: root,
   graphiql: true,
 }));
-// app.use('/order', graphqlHTTP({
-//     schema: buildSchema(schema),
-//     rootValue: root,
-//     graphiql: true,
-// }));
 
 
-app.listen(4000);
-console.log('Running a GraphQL API server at localhost:4000/graphql');
+
+app.listen(5000);
+console.log('Running a GraphQL API server at localhost:5000/graphql');

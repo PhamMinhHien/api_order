@@ -1,6 +1,6 @@
 
 global.__proto__.mrequire = require.main.require
-const { getService, closeAllServices } = mrequire('./modules/dgraph-client')
+const { getService, closeAllServices } = mrequire('./dgraph-client')
 const { alpha_grpc } = config
 
 const tvcdb = getService('tvcdb', alpha_grpc)
