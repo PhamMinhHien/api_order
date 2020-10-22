@@ -1,12 +1,13 @@
 version: "3.7"
+
 services:
-  api_public:
+  api_order:
     image: node:latest
     container_name: api_order_dev
     networks:
       - dev-net
     ports:
-      - "127.0.0.1:9301:9301"
+      - "127.0.0.1:9302:9302"
       - "127.0.0.1:62000:62000"
     volumes:
       - ./:/api_order

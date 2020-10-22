@@ -4,10 +4,10 @@ const session = mrequire('./modules/userSession')
 const json2xls = mrequire('./services/exports/json2xls')
 const tracking = mrequire('./services/tracking')
 
-async function mutate(request, reply) {
+async function mutate(request) {
   const { uid, order_status, notes, customer_name, phone_number, address_des, shipping_code, reason, shipping_partner_value, date_delivery_success } = request.body
   const userLogged = await session.getUser(request)
-  const {result: [current_o]} = await db.query(`{
+  const { result: [current_o] } = await db.query(`{
     result(func: uid(${uid})) @filter(type(PrimaryOrder)) {
       uid
       order_status
@@ -21,8 +21,8 @@ async function mutate(request, reply) {
 
   // TODO: Check nếu data là thuộc PrimaryOrder |=> order_status === 4 ( đã giao ) |=> Update date_delivery_success
   let date_primary //, date_max
-  if(current_o && current_o?.sub_orders && current_o?.sub_orders.length > 0){
-    if(order_status && parseInt(order_status) === 4 && current_o.order_status !== 4 ){ // Đã giao === 4
+  if (current_o && current_o?.sub_orders && current_o?.sub_orders.length > 0) {
+    if (order_status && parseInt(order_status) === 4 && current_o.order_status !== 4) { // Đã giao === 4
       let date_max = 0
       current_o.sub_orders.forEach(i => {
         if (i?.date_delivery_success > date_max) {
@@ -32,9 +32,9 @@ async function mutate(request, reply) {
       date_primary = date_max !== 0 ? date_max : null
     }
   }
-  
+
   // Khí order_status (PrimaryOrder) === "Đã hủy" (6) => Update order_status cho order con  
-  if(current_o && order_status && parseInt(order_status) === 6){
+  if (current_o && order_status && parseInt(order_status) === 6) {
     await db.upsert({
       query: `{
         ods as result(func: uid(${uid})) @filter(type(PrimaryOrder)) {
@@ -59,7 +59,7 @@ async function mutate(request, reply) {
       ]
     })
   }
-  
+
   return db.mutate({
     set: {
       uid,
@@ -71,9 +71,9 @@ async function mutate(request, reply) {
       shipping_code,
       reason,
       shipping_partner_value,
-      date_delivery_success : current_o && date_primary ? date_primary : date_delivery_success
+      date_delivery_success: current_o && date_primary ? date_primary : date_delivery_success
     }
-  }).then(result => {
+  }).then(() => {
     const trackBody = {
       type: 'order',
       new_status: parseInt(order_status),
@@ -85,12 +85,12 @@ async function mutate(request, reply) {
     }
     tracking(trackBody)
     emitSync(uid, 'order')
-    return current_o && date_primary ? { statusCode: 200 , date_delivery_success : date_primary } : { statusCode: 200 }
+    return current_o && date_primary ? { statusCode: 200, date_delivery_success: date_primary } : { statusCode: 200 }
   })
 }
 
 const orderFragment =
-`created_at
+  `created_at
 uid
 order_id
 order_status
@@ -164,7 +164,7 @@ voucher_usage: ~voucher_usage.order @normalize {
   }
 }`
 
-function getAll(request) {
+function getAll() {
   return db.query(`{
     result(func: type(PrimaryOrder), orderdesc: created_at) @filter(not eq(is_deleted, true)) {
       ${orderFragment}
@@ -190,7 +190,7 @@ function getByUid(request) {
   }`, { $uid })
 }
 
-async function orderFilter({body}) {
+async function orderFilter({ body }) {
   const { number = 20, page = 0, filter = '' } = body
   const { summary, data } = await db.query(`query result($number: int, $offset: int) {
     orders as summary(func: type(PrimaryOrder)) @filter(not eq(is_deleted, true)${filter}) {
@@ -214,11 +214,11 @@ async function orderFilter({body}) {
 }
 
 function orderExport(request, reply) {
-  let { number = 20, page = 0, filter = '', selectedDateFrom = '', selectedDateTo = ''} = request.query
+  let { filter = '', selectedDateFrom = '', selectedDateTo = '' } = request.query
   if (selectedDateFrom) {
     filter += ` AND ge(created_at, ${selectedDateFrom})`
   }
-  
+
   if (selectedDateTo) {
     filter += ` AND le(created_at, ${selectedDateTo})`
   }
@@ -252,7 +252,7 @@ function orderExport(request, reply) {
   }`
   // console.log(query)
   db.query(query)
-    .then(({data, status, shipping_partners, reasons, partner}) => {
+    .then(({ data, status, shipping_partners, reasons, partner }) => {
       try {
         const { xlsFieldsName, xlsFieldsLabel, rows } = parseDetail(data, status, shipping_partners, reasons, partner)
         const xls = json2xls(rows, { fields: xlsFieldsName, labels: xlsFieldsLabel })
@@ -263,12 +263,12 @@ function orderExport(request, reply) {
         const res = reply.raw
         res.sent = true
         res.end(xls, 'binary')
-      } catch(err) {
+      } catch (err) {
         reply.send(err)
       }
     })
     .catch(err => {
-      reply.send
+      reply.send(err)
     })
 
   function parseDetail(data, status, shipping_partners, reasons, partner) {
@@ -378,8 +378,8 @@ function orderExport(request, reply) {
             let row = {
               export_date: getDate(),
               created_at: getDate(dataDetail.created_at),
-              order_id: dataDetail.order_id || "", 
-              sub_order_id: sub.order_id || "", 
+              order_id: dataDetail.order_id || "",
+              sub_order_id: sub.order_id || "",
               account_name: dataDetail?.['order.customer']?.customer_name,
               account_phone_number: dataDetail?.['order.customer']?.phone_number,
               customer_name: dataDetail.customer_name || "",
@@ -387,7 +387,7 @@ function orderExport(request, reply) {
               address_des: dataDetail.address_des || "",
               province: dataDetail.province ? dataDetail.province.name : "",
               district: dataDetail.district ? dataDetail.district.name : "",
-              product_name: item.product_name || "", 
+              product_name: item.product_name || "",
               sku_id: item.product && item.product.sku_id || "",
               quantity: item.quantity || 1,
               unit: item.product && item.product.unit || "",
@@ -415,13 +415,13 @@ function orderExport(request, reply) {
             rows.push(row)
           })
         })
-      } else if (dataDetail['order.items']){ //đơn hàng kiểu cũ
+      } else if (dataDetail['order.items']) { //đơn hàng kiểu cũ
         dataDetail['order.items'].map(item => {
           let row = {
             export_date: getDate(),
             created_at: getDate(dataDetail.created_at),
-            order_id: dataDetail.order_id || "", 
-            sub_order_id: dataDetail.order_id || "", 
+            order_id: dataDetail.order_id || "",
+            sub_order_id: dataDetail.order_id || "",
             account_name: dataDetail['order.customer'].customer_name,
             account_phone_number: dataDetail['order.customer'].phone_number,
             customer_name: dataDetail.customer_name || "",
@@ -429,7 +429,7 @@ function orderExport(request, reply) {
             address_des: dataDetail.address_des || "",
             province: dataDetail.province ? dataDetail.province.name : "",
             district: dataDetail.district ? dataDetail.district.name : "",
-            product_name: item.product_name || "", 
+            product_name: item.product_name || "",
             sku_id: item.product && item.product.sku_id || "",
             quantity: item.quantity || 1,
             unit: item.product && item.product.unit || "",
@@ -464,8 +464,8 @@ function orderExport(request, reply) {
       rows
     }
   }
-  const calcPay = ({sell_price = 0, discount = 0, quantity = 0}) => {
-    return (1-discount/100)*sell_price*quantity
+  const calcPay = ({ sell_price = 0, discount = 0, quantity = 0 }) => {
+    return (1 - discount / 100) * sell_price * quantity
   }
 }
 
@@ -475,11 +475,20 @@ const getDate = (timestamp = null) => {
   return resDate
 }
 
-module.exports = [
-  ['post', '/list/order', orderFilter],
-  ['get', '/list/order', getAll],
-  ['get', '/list/order/:number/:offset', loadMore],
-  ['get', '/order/:uid', getByUid],
-  ['post', '/order', mutate],
-  ['get', '/order/order_export.xlsx', orderExport]
-]
+module.exports = {
+  orderFilter,
+  getAll,
+  loadMore,
+  getByUid,
+  mutate,
+  orderExport
+}
+
+// module.exports = [
+//   ['post', '/list/order', orderFilter],
+//   ['get', '/list/order', getAll],
+//   ['get', '/list/order/:number/:offset', loadMore],
+//   ['get', '/order/:uid', getByUid],
+//   ['post', '/order', mutate],
+//   ['get', '/order/order_export.xlsx', orderExport]
+// ]

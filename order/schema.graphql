@@ -1,0 +1,19 @@
+type Query {
+    brand(name: String!): Brand
+
+},
+
+type Mutation {
+    updateOrder(uid: String! , input: orderInput): Order
+    createOrder(input: orderInput): Order
+    deleteOrder(uid: String!): Order
+}
+
+type Order {
+
+}
+
+type Brand {
+    brand_name: String!
+    uid: String!
+}

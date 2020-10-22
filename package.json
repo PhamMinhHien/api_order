@@ -1,24 +1,20 @@
 {
-  "name": "api_order",
+  "name": "api_express",
   "version": "1.0.0",
   "description": "",
-  "main": "server.js",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/PhamMinhHien/api_order.git"
-  },
   "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/PhamMinhHien/api_order/issues"
-  },
-  "homepage": "https://github.com/PhamMinhHien/api_order#readme",
   "dependencies": {
+    "cors": "^2.8.5",
+    "dgraph-js": "^20.3.1",
     "express": "^4.17.1",
     "express-graphql": "^0.11.0",
-    "graphql": "^15.3.0"
+    "graphql": "^15.3.0",
+    "grpc": "^1.24.3",
+    "nodemon": "^2.0.6"
   }
 }
