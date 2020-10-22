@@ -34,32 +34,32 @@ var schema = buildSchema(`
 
 // Dữ liệu 
 var coursesData = [{
-    id: 1,
-    title: 'ReactJS',
-    author: 'codedeom',
-    description: 'Hoc reactJS co ban',
-    topic: 'Node.js',
-    url: 'https://codedeom/reactjs-co-ban'
-  },
-  {
-    id: 2,
-    title: 'NodeJS',
-    author: 'codedeom',
-    description: 'Hoc NodeJS co ban',
-    topic: 'Node.js',
-    url: 'https://codedeom/nodeJS-co-ban'
-  },
-  {
-    id: 3,
-    title: 'Angular',
-    author: 'codedeom',
-    description: 'Hoc Angular co ban',
-    topic: 'Node.js',
-    url: 'https://codedeom/angular-co-ban'
-  },
+  id: 1,
+  title: 'ReactJS',
+  author: 'codedeom',
+  description: 'Hoc reactJS co ban',
+  topic: 'Node.js',
+  url: 'https://codedeom/reactjs-co-ban'
+},
+{
+  id: 2,
+  title: 'NodeJS',
+  author: 'codedeom',
+  description: 'Hoc NodeJS co ban',
+  topic: 'Node.js',
+  url: 'https://codedeom/nodeJS-co-ban'
+},
+{
+  id: 3,
+  title: 'Angular',
+  author: 'codedeom',
+  description: 'Hoc Angular co ban',
+  topic: 'Node.js',
+  url: 'https://codedeom/angular-co-ban'
+},
 ]
 
-var updateCourse = function ({ id, input }){
+var updateCourse = function ({ id, input }) {
   coursesData.map(course => {
     if (course.id === id) {
       course.title = input.title
@@ -73,9 +73,7 @@ var updateCourse = function ({ id, input }){
   return coursesData.filter(course => course.id === id)[0];
 }
 
-var createCourse = function ({
-  input
-}) {
+var createCourse = function ({input}) {
   var id = Math.max(...coursesData.map(course => course.id)) + 1
   const newCourse = {
     id,
@@ -85,15 +83,13 @@ var createCourse = function ({
   return newCourse
 }
 
-var deleteCourse = function ({
-  id
-}) {
+var deleteCourse = function ({id}) {
   const newCourses = [...coursesData.filter(course => course.id !== id)];
   coursesData = newCourses
   return coursesData;
 }
 
-var getCourse = function (args) {
+var getCourse = function (args){
   var id = args.id;
   return coursesData.filter(course => {
     return course.id == id;
