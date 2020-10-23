@@ -475,20 +475,12 @@ const getDate = (timestamp = null) => {
   return resDate
 }
 
-module.exports = {
-  orderFilter,
-  getAll,
-  loadMore,
-  getByUid,
-  mutate,
-  orderExport
-}
 
-// module.exports = [
-//   ['post', '/list/order', orderFilter],
-//   ['get', '/list/order', getAll],
-//   ['get', '/list/order/:number/:offset', loadMore],
-//   ['get', '/order/:uid', getByUid],
-//   ['post', '/order', mutate],
-//   ['get', '/order/order_export.xlsx', orderExport]
-// ]
+module.exports = [
+  ['post', '/list/order', orderFilter],
+  ['get', '/list/order', getAll],
+  ['get', '/list/order/:number/:offset', loadMore],
+  ['get', '/order/:uid', getByUid],
+  ['post', '/order', mutate],
+  ['get', '/order/order_export.xlsx', orderExport]
+]

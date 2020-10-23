@@ -1,8 +1,8 @@
 "use strict"
 const db = mrequire('./services/tvcdb')
-const session = mrequire('./modules/userSession')
-const json2xls = mrequire('./services/exports/json2xls')
-const tracking = mrequire('./services/tracking')
+// const session = mrequire('./modules/userSession')
+// const json2xls = mrequire('./services/exports/json2xls')
+// const tracking = mrequire('./services/tracking')
 
 
 const orderFragment =
@@ -88,7 +88,16 @@ function loadMore(offset, number) {
     }`, { $number: number || 20, $offset: offset || 0 })
 }
 
+function getByUid($uid){
+  return db.query(`query result($uid: string) {
+    result(func: uid($uid)) {
+      ${orderFragment}
+    }
+  } `, { $uid })
+}
+
 
 module.exports = {
-    loadMore
+    loadMore,
+    getByUid
 }

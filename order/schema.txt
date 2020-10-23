@@ -1,0 +1,23 @@
+type Query {
+    loadMoreOrder(offset: Int, number: Int): Pagination 
+    searchByUid(id: String!) : Order 
+}
+
+type Pagination {
+    offset: Int!
+    number: Int!
+}
+
+type Order {
+    order_id: String 
+    order_status: Int
+    pay_status: Int
+    notes: String
+    had_sent_shipping: bool
+    shipping_code: String
+    shipping_partner_value: String
+    reason: String
+    date_delivery_success: Int
+    // order.partner: Partner
+    // order_items: [OrderItem]
+}

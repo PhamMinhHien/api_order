@@ -1,2 +1,2 @@
 #!/bin/bash
-npx nodemon --inspect=0.0.0.0:9301 server.js
+npx nodemon --inspect=0.0.0.0:9302 server.js

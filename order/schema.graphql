@@ -1,15 +1,13 @@
 type Query {
-    loadMoreOrder(offset: Int, number: Int): Pagination 
+    brand(name: String!): Brand
+    searchByUid(id: String!) : Order 
 }
-
-type Mutation {
-    updateOrder(uid: String! , input: orderInput): Order
-    createOrder(input: orderInput): Order
-    deleteOrder(uid: String!): Order
+type Brand {
+    brand_name: String!
+    uid: String!
 }
+type Order {
+    id: String!
+    order_id: String!
 
-
-type Pagination {
-    offset: Int!
-    number: Int!
 }

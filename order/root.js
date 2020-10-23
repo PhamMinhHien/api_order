@@ -1,15 +1,29 @@
 const db = require.main.require('./services/tvcdb')
 
-const { mutate , orderFilter , loadMore } = require('./query/api_cms.js') // import những hàm truy vấn từ api-cms
+const { mutate , orderFilter , loadMore, getByUid } = require('./query/api-cms') // import những hàm truy vấn từ api-cms
 
 
 async function pagination_order(args){
-    let os = args.offset 
+    let os = args.offset  // Thiết lập giá trị mặc định - tùy ý 
     let nb = args.number
     const { result } = await loadMore(os,nb)
     console.log(result)
     return result
 }
+async function searchByUid(args){
+    var uid = args.id
+    const {result} = await getByUid(uid)
+    console.log(result)
+    return {
+        id: result[0].uid,
+        order_id: result[0].order_id
+    }
+}
+
+
+
+
+
 
 async function getBrand(args) {
     var name = args.name
@@ -19,10 +33,8 @@ async function getBrand(args) {
         return rs.brand_name == name;
     })[0];
 }
-
 module.exports = {
     brand: getBrand,
-    mutate: mutate,
-    orderFilter: orderFilter,
-    loadMoreOrder: pagination_order 
+    searchByUid: searchByUid,
+    // loadMoreOrder: pagination_order 
 }
