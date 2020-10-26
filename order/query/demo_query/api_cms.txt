@@ -1,0 +1,54 @@
+//==================================================================
+// QUERY DEMO FOR UI CỦA GRAPHQL
+//==================================================================
+
+
+// 1 - search_by_uid
+    |=> Kiểu bình thường - truyền tham số 
+    {
+        searchByUid(id: "0x1d7da"){
+            uid
+            order_id
+        }
+    }
+
+    |=> Kiểu dùng tham số : paramater 
+    {
+        query myQuery($params : enum ){
+            searchByUid(id: params){
+                uid
+                order_id
+            }
+        }
+    }
+
+// 2 - Phân trang - ko có filter 
+    |=> Kiểu thường 
+    {
+        loadMoreOrder(number: 10, offset: 0){
+            uid
+            order_id
+        }
+    }
+
+    |=> Kiểu dùng biến  
+
+
+// 3 - Phân trang - có filter
+    1. Kiểu query bình thường 
+    {
+        listOrder(number: 10, page: 0, filter: ""){
+            totalCount
+            data {
+                uid
+                order_id
+            }
+        }
+    }
+
+// 4 - Update data trên CMS 
+
+
+//==================================================================
+// QUERY DEMO FOR FRONTEND
+//==================================================================

@@ -28,7 +28,7 @@ var schema = buildSchema(`
     },
     type Mutation {
       updateCourse(id: Int!, input: courseInput): Course
-      createCourse(input: courseInput): Course,
+      createCourse(input: courseInput): Course
       deleteCourse(id: Int!): [Course]
     },
     type Course {

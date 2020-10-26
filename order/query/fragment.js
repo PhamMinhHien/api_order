@@ -45,24 +45,24 @@ const orderFragment = `
     shipping_partner_value
     date_delivery_success
     order_items {
-    uid
-    product_name
-    quantity
-    sell_price
-    discount
-    promotion_desc
-    product: order.product {
-        sku_id
-        promotion_detail
-        payment_terms
-        return_terms
-        unit
-        areas {
         uid
-        name
+        product_name
+        quantity
+        sell_price
+        discount
+        promotion_desc
+        product: order.product {
+            sku_id
+            promotion_detail
+            payment_terms
+            return_terms
+            unit
+            areas {
+                uid
+                name
+            }
+            }
         }
-    }
-    }
     }
     voucher_usage: ~voucher_usage.order @normalize {
     uid

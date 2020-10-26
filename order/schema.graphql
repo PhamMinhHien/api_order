@@ -1,15 +1,35 @@
 type Query {
     searchByUid(id: String!) : Order 
     loadMoreOrder(number: Int!, offset: Int!) : [Order]
-    listOrder(number: Int!, page: Int!, filter: String) : ListOrder
+    listOrder(number: Int!, page: Int!, filter: String) : ListOrderFilter
+
+}
+type Mutation {
+    createOrder(input : orderInput) : Order 
+    updateOrder(uid: String!, input: orderInput): Order
+}
+
+input orderInput {
+    uid : String!
+    order_id : String!
+    order_status : Int
+    notes: String 
+    customer_name : String!
+    phone_number : Int!
+    address_des : String!
+    shipping_code : Int!
+    reason : String!
+    shipping_partner_value : String
+    date_delivery_success : Int
 }
 
 type Order {
     uid: String!
     order_id: String
+    status_code: Int
 }
 
-type ListOrder {
+type ListOrderFilter {
     totalCount: Int!
     data: [Order]!
 }
