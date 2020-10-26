@@ -1,40 +1,36 @@
 const db = require.main.require('./services/tvcdb')
 
-const { mutate , orderFilter , loadMore, getByUid } = require('./query/api-cms') // import những hàm truy vấn từ api-cms
+const { mutate , orderFilter , loadMore, getByUid } = require('./query/query') // import những hàm truy vấn từ api-cms
 
-
-async function pagination_order(args){
-    let os = args.offset  // Thiết lập giá trị mặc định - tùy ý 
-    let nb = args.number
-    const { result } = await loadMore(os,nb)
-    console.log(result)
-    return result
-}
+// Tìm theo UID => OK
 async function searchByUid(args){
     var uid = args.id
     const {result} = await getByUid(uid)
+    return result && { ...result[0], id: result[0].uid }
+}
+
+// Phân trang order => 
+async function pagination_order(args){
+    let nb = args.number
+    let os = args.offset
+    const { result } = await loadMore(nb,os)
     console.log(result)
-    return {
-        id: result[0].uid,
-        order_id: result[0].order_id
-    }
+    return result
+}
+
+// Lấy danh sách dữ liệu Order về CMS => đã qua cơ chế lọc dữ liệu trên table 
+async function list_order(args){
+    // let number = args.number 
+
+    const { summary: [{totalCount}], data } = await orderFilter(args)
+    return { totalCount, data }
 }
 
 
 
 
-
-
-async function getBrand(args) {
-    var name = args.name
-    const { result } = await db.query(`{ result(func: type(Brand)){uid,expand(_all_)} }`)
-    console.log(result);
-    return result.filter(rs => {
-        return rs.brand_name == name;
-    })[0];
-}
 module.exports = {
-    brand: getBrand,
     searchByUid: searchByUid,
-    // loadMoreOrder: pagination_order 
+    loadMoreOrder: pagination_order,
+    listOrder: list_order,
 }

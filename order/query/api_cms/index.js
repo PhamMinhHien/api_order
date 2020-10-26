@@ -182,8 +182,8 @@ function loadMore(request) {
     $offset: offset || 0
   })
 }
-function getByUid(request) {
-  const $uid = request.params.uid
+function getByUid($uid) {
+  // const $uid = request.params.uid
   return db.query(`query result($uid: string) {
     result(func: uid($uid)) {
       ${orderFragment}

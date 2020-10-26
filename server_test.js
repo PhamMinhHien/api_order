@@ -1,3 +1,12 @@
+/**
+  File này là file server test , bao gồm : 
+    - Thiết lập server 
+    - Data ảo 
+    - Schema 
+    - Root : của 1 route 
+  => chạy chung cấu trúc Graphql 
+ */
+
 var express = require('express');
 const cors = require('cors')
 
