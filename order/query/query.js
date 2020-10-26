@@ -1,26 +1,14 @@
-/*
-    Nội dung : 
-      - File này export các function query data từ api cms 
-      - Gom được nội dung nào sẽ gom sau .
-*/
-const { orderFragment } = require('./fragment')
-
-
-
-
-
-
-
 "use strict"
+const { orderFragment } = require('./fragment')
 const db = mrequire('./services/tvcdb')
 // const session = mrequire('./modules/userSession')
 // const json2xls = mrequire('./services/exports/json2xls')
 // const tracking = mrequire('./services/tracking')
 
 
-// 1 - Mutation : update + create 
+//TODO 1. Mutation : Create  + Update order 
 async function mutate(body) {
-  const { uid , input : {order_status, notes, customer_name, phone_number, address_des, shipping_code, reason, shipping_partner_value, date_delivery_success }} = body
+  const { uid, input: { order_status, notes, customer_name, phone_number, address_des, shipping_code, reason, shipping_partner_value, date_delivery_success } } = body
   // const userLogged = await session.getUser(request)
   const { result: [current_o] } = await db.query(`{
     result(func: uid(${uid})) @filter(type(PrimaryOrder)) {
@@ -34,7 +22,7 @@ async function mutate(body) {
     }
   }`)
 
-  // TODO: Check nếu data là thuộc PrimaryOrder |=> order_status === 4 ( đã giao ) |=> Update date_delivery_success
+  // : Check nếu data là thuộc PrimaryOrder |=> order_status === 4 ( đã giao ) |=> Update date_delivery_success
   let date_primary //, date_max
   if (current_o && current_o?.sub_orders && current_o?.sub_orders.length > 0) {
     if (order_status && parseInt(order_status) === 4 && current_o.order_status !== 4) { // Đã giao === 4
@@ -104,8 +92,8 @@ async function mutate(body) {
   })
 }
 
-// Tìm record của Order theo UID 
-function getByUid($uid){
+//TODO 2. Tìm record của Order theo UID 
+function getByUid($uid) {
   return db.query(`query result($uid: string) {
     result(func: uid($uid)) {
       ${orderFragment}
@@ -113,7 +101,7 @@ function getByUid($uid){
   } `, { $uid })
 }
 
-// Phân trang order - ko filter 
+//TODO 3. Phân trang order - ko filter
 function loadMore(number, offset) {
   return db.query(`query result($number: string, $offset: string) {
       result(func: type(PrimaryOrder), orderdesc: created_at, first: $number, offset: $offset) {
@@ -122,9 +110,9 @@ function loadMore(number, offset) {
   }`, { $number: `${number}` || 20, $offset: `${offset}` || 0 })
 }
 
-// Phân trang order - có filter  
+//TODO 4. Phân trang order - có filter 
 async function orderFilter(body) {
-  const { number = 20, page = 0, filter = '' } = body 
+  const { number = 20, page = 0, filter = '' } = body
   const { summary, data } = await db.query(`query result($number: int, $offset: int) {
       orders as summary(func: type(PrimaryOrder)) @filter(not eq(is_deleted, true)${filter}) {
         totalCount: count(uid)
@@ -141,13 +129,13 @@ async function orderFilter(body) {
   return { summary, data }
 }
 
-
+//TODO 5. Export order về file Excel 
 function orderExport(query) {
-  let { filter = '', selectedDateFrom = '', selectedDateTo = ''} = query
+  let { filter = '', selectedDateFrom = '', selectedDateTo = '' } = query
   if (selectedDateFrom) {
     filter += ` AND ge(created_at, ${selectedDateFrom})`
   }
-  
+
   if (selectedDateTo) {
     filter += ` AND le(created_at, ${selectedDateTo})`
   }
@@ -181,7 +169,7 @@ function orderExport(query) {
   }`
   // console.log(query)
   db.query(query)
-    .then(({data, status, shipping_partners, reasons, partner}) => {
+    .then(({ data, status, shipping_partners, reasons, partner }) => {
       try {
         const { xlsFieldsName, xlsFieldsLabel, rows } = parseDetail(data, status, shipping_partners, reasons, partner)
         const xls = json2xls(rows, { fields: xlsFieldsName, labels: xlsFieldsLabel })
@@ -192,7 +180,7 @@ function orderExport(query) {
         const res = reply.raw
         res.sent = true
         res.end(xls, 'binary')
-      } catch(err) {
+      } catch (err) {
         reply.send(err)
       }
     })
@@ -307,8 +295,8 @@ function orderExport(query) {
             let row = {
               export_date: getDate(),
               created_at: getDate(dataDetail.created_at),
-              order_id: dataDetail.order_id || "", 
-              sub_order_id: sub.order_id || "", 
+              order_id: dataDetail.order_id || "",
+              sub_order_id: sub.order_id || "",
               account_name: dataDetail?.['order.customer']?.customer_name,
               account_phone_number: dataDetail?.['order.customer']?.phone_number,
               customer_name: dataDetail.customer_name || "",
@@ -316,7 +304,7 @@ function orderExport(query) {
               address_des: dataDetail.address_des || "",
               province: dataDetail.province ? dataDetail.province.name : "",
               district: dataDetail.district ? dataDetail.district.name : "",
-              product_name: item.product_name || "", 
+              product_name: item.product_name || "",
               sku_id: item.product && item.product.sku_id || "",
               quantity: item.quantity || 1,
               unit: item.product && item.product.unit || "",
@@ -344,13 +332,13 @@ function orderExport(query) {
             rows.push(row)
           })
         })
-      } else if (dataDetail['order.items']){ //đơn hàng kiểu cũ
+      } else if (dataDetail['order.items']) { //đơn hàng kiểu cũ
         dataDetail['order.items'].map(item => {
           let row = {
             export_date: getDate(),
             created_at: getDate(dataDetail.created_at),
-            order_id: dataDetail.order_id || "", 
-            sub_order_id: dataDetail.order_id || "", 
+            order_id: dataDetail.order_id || "",
+            sub_order_id: dataDetail.order_id || "",
             account_name: dataDetail['order.customer'].customer_name,
             account_phone_number: dataDetail['order.customer'].phone_number,
             customer_name: dataDetail.customer_name || "",
@@ -358,7 +346,7 @@ function orderExport(query) {
             address_des: dataDetail.address_des || "",
             province: dataDetail.province ? dataDetail.province.name : "",
             district: dataDetail.district ? dataDetail.district.name : "",
-            product_name: item.product_name || "", 
+            product_name: item.product_name || "",
             sku_id: item.product && item.product.sku_id || "",
             quantity: item.quantity || 1,
             unit: item.product && item.product.unit || "",
@@ -393,15 +381,15 @@ function orderExport(query) {
       rows
     }
   }
-  const calcPay = ({sell_price = 0, discount = 0, quantity = 0}) => {
-    return (1-discount/100)*sell_price*quantity
+  const calcPay = ({ sell_price = 0, discount = 0, quantity = 0 }) => {
+    return (1 - discount / 100) * sell_price * quantity
   }
 }
 
 module.exports = {
-    mutate,
-    getByUid,
-    loadMore,
-    orderFilter,
-    orderExport
+  mutate,
+  getByUid,
+  loadMore,
+  orderFilter,
+  orderExport
 }

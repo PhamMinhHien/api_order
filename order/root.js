@@ -1,5 +1,3 @@
-const db = require.main.require('./services/tvcdb')
-
 const { mutate , orderFilter , loadMore, getByUid } = require('./query/query') // import những hàm truy vấn từ api-cms
 
 async function create_order(input){
