@@ -8,9 +8,9 @@ const { makePayment, gateways } = mrequire('./services/payment/fptplay')
 const generateOrderId = require('./order-id-generator')
 const syncTrigger = require('./sync')
 const { applyVoucher, redeemUsage, reChargedVoucher } = require('./voucher')
-const { applyVoucherV2 } = require('./voucher_1.1')
+// const { applyVoucherV2 } = require('./voucher_1.1')
 
-async function createOrderItems(items) {
+async function createOrderItems (items) {
   const uids = items.map(i => i.uid)
   const quantities = createUidMap(items, "quantity")
   const { products } = await db.query(`{
@@ -29,23 +29,21 @@ async function createOrderItems(items) {
       promotion_desc: promotion_desc
     }
   }`)
-  return products.map(({uid, partner_uid, partner_id, product_name, color, cost_price = 0, sell_price = 0, discount = 0, promotion_desc}) => {
-    return {
-      "dgraph.type": "OrderItem",
-      "order.product": { uid },
-      partner_uid,
-      partner_id,
-      quantity: quantities[uid],
-      product_name,
-      cost_price,
-      sell_price,
-      discount,
-      promotion_desc
-    }
-  })
+  return products.map(({uid, partner_uid, partner_id, product_name, cost_price = 0, sell_price = 0, discount = 0, promotion_desc}) => ({
+    "dgraph.type": "OrderItem",
+    "order.product": { uid },
+    partner_uid,
+    partner_id,
+    quantity: quantities[uid],
+    product_name,
+    cost_price,
+    sell_price,
+    discount,
+    promotion_desc
+  }))
 }
 
-function splitOrdersByPartnerId(orderItems, mainOrderId) {
+function splitOrdersByPartnerId (orderItems, mainOrderId) {
   const result = {}
   for(let i of orderItems) {
     if('partner_uid' in i) {
@@ -61,19 +59,17 @@ function splitOrdersByPartnerId(orderItems, mainOrderId) {
     }
   }
   let charCode = 65
-  return Object.entries(result).map(([partner_uid, data]) => {
-    return {
-      "dgraph.type": "Order",
-      'order.partner': {uid: partner_uid === 'undefined' ? null : partner_uid},
-      order_id: mainOrderId + String.fromCharCode(charCode++),
-      partner_id: data.partner_id,
-      "order_items": data.items,
-      order_status: 1
-    }
-  })
+  return Object.entries(result).map(([partner_uid, data]) => ({
+    "dgraph.type": "Order",
+    'order.partner': {uid: partner_uid === 'undefined' ? null : partner_uid},
+    order_id: mainOrderId + String.fromCharCode(charCode++),
+    partner_id: data.partner_id,
+    "order_items": data.items,
+    order_status: 1
+  }))
 }
 
-async function submitOrder({ body }) {
+async function submitOrder ({ body }) {
   // Submited order info
   const {
     pay_gateway,
@@ -109,9 +105,7 @@ async function submitOrder({ body }) {
   }
 
   const orderItems = await createOrderItems(items)
-  let amount = orderItems.reduce((total, {sell_price, discount, quantity}) => {
-    return ((discount ? sell_price - sell_price*discount/100 : sell_price) * quantity) + total
-  }, 0)
+  let amount = orderItems.reduce((total, {sell_price, discount, quantity}) => ((discount ? sell_price - sell_price * discount / 100 : sell_price) * quantity) + total, 0)
 
   if(!amount) {
     throw { statusCode: 400, message: `Invalid amount: ${amount}` }
@@ -130,11 +124,11 @@ async function submitOrder({ body }) {
       customer_id
     }
     const check_voucher = await applyVoucher({body: bodyCheck})
-    if (check_voucher.statusCode  === 200) {
+    if (check_voucher.statusCode === 200) {
       voucher = check_voucher.data
     }
   }
-  
+
   // Save Order to database
   const set = {
     "dgraph.type": "PrimaryOrder",
@@ -173,7 +167,7 @@ async function submitOrder({ body }) {
   if (voucher_code && voucher?.uid) {
     redeemUsage(voucher.uid, voucher_code, customer_id, order_uid, items)
   }
-   
+
   await syncTrigger('order', order_uid, primaryOrderId, 'submit_order')
 
   if (pay_gateway != "cod" && pay_gateway != "quickpay") {
@@ -200,7 +194,7 @@ async function submitOrder({ body }) {
   }
 }
 
-async function deleteOrder({params:{uid}}) {
+async function deleteOrder ({params: {uid}}) {
   // Query dùng Condition upsert compare order_status > 4 không được
   // Dùng code giải quyết thay thế
   if(!isUid(uid)) throw { statusCode: 400, message: "Invalid order uid" }
@@ -219,8 +213,7 @@ async function deleteOrder({params:{uid}}) {
 }
 
 
-
-const order_fields = 
+const order_fields =
 `uid
 order_id
 pay_status: pay_status
@@ -255,7 +248,7 @@ const parseOrder = (os) => {
   os.map(o => {
     const date = new Date(o.created_at)
     const year = String(date.getFullYear())
-    const month =  String(date.getMonth() + 1).padStart(2, "0")
+    const month = String(date.getMonth() + 1).padStart(2, "0")
     const day = String(date.getDate()).padStart(2, "0")
     o.created_at = `${day}/${month}/${year}`
     o.pay_gateway == "cod" ? o.pay_gateway = "Thanh toán khi nhận hàng" : o.pay_gateway == "quickpay" ? o.pay_gateway = "Đặt hàng nhanh" : o.pay_gateway
@@ -264,7 +257,7 @@ const parseOrder = (os) => {
 }
 
 
-async function listOrders({body:{customer_id}}) {
+async function listOrders ({body: {customer_id}}) {
 
   if(!isUid(customer_id)) throw { statusCode: 400, message: "Invalid customer uid" }
 
@@ -290,11 +283,11 @@ async function listOrders({body:{customer_id}}) {
 
   success_orders = parseOrder(success_orders)
   process_orders = parseOrder(process_orders)
-  
+
   return {
     statusCode: 200,
     filter_orders: {
-      'success' : success_orders,
+      'success': success_orders,
       'processing': process_orders
     }
   }

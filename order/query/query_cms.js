@@ -1,12 +1,12 @@
 "use strict"
-const { orderFragment } = require('./fragment')
+const { orderFragment } = require('./fragment/fragment')
 const db = mrequire('./services/tvcdb')
 // const session = mrequire('./modules/userSession')
 // const json2xls = mrequire('./services/exports/json2xls')
 // const tracking = mrequire('./services/tracking')
 
 
-//TODO 1. Mutation : Create  + Update order 
+// TODO 1. Mutation : Create  + Update order 
 async function mutate(body) {
   const { uid, input: { order_status, notes, customer_name, phone_number, address_des, shipping_code, reason, shipping_partner_value, date_delivery_success } } = body
   // const userLogged = await session.getUser(request)
@@ -92,7 +92,7 @@ async function mutate(body) {
   })
 }
 
-//TODO 2. Tìm record của Order theo UID 
+// TODO 2. Tìm record của Order theo UID 
 function getByUid($uid) {
   return db.query(`query result($uid: string) {
     result(func: uid($uid)) {
@@ -101,7 +101,7 @@ function getByUid($uid) {
   } `, { $uid })
 }
 
-//TODO 3. Phân trang order - ko filter
+// TODO 3. Phân trang order - ko filter
 function loadMore(number, offset) {
   return db.query(`query result($number: string, $offset: string) {
       result(func: type(PrimaryOrder), orderdesc: created_at, first: $number, offset: $offset) {
@@ -110,7 +110,7 @@ function loadMore(number, offset) {
   }`, { $number: `${number}` || 20, $offset: `${offset}` || 0 })
 }
 
-//TODO 4. Phân trang order - có filter 
+// TODO 4. Phân trang order - có filter 
 async function orderFilter(body) {
   const { number = 20, page = 0, filter = '' } = body
   const { summary, data } = await db.query(`query result($number: int, $offset: int) {
@@ -129,9 +129,9 @@ async function orderFilter(body) {
   return { summary, data }
 }
 
-//TODO 5. Export order về file Excel 
-function orderExport(query) {
-  let { filter = '', selectedDateFrom = '', selectedDateTo = '' } = query
+// TODO 5. Export order về file Excel 
+function orderExport(body) {
+  let { filter = '', selectedDateFrom = '', selectedDateTo = '' } = body
   if (selectedDateFrom) {
     filter += ` AND ge(created_at, ${selectedDateFrom})`
   }

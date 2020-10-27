@@ -8,14 +8,14 @@ const syncTrigger = require('./sync')
 
 const mapPayStatus = ["unknown", "success", "failed", "pending"]
 
-async function checkTransactionStatus({body}) {
+async function checkTransactionStatus ({body}) {
   // Chỗ này dùng uid thì chuẩn hơn
   const { order_id } = body
 
   if(!isOrderId(order_id)) {
     throw { statusCode: 400, message: `Invalid order_id: "${order_id}"` }
   }
-  
+
   const { orders: [order] } = await db.query(`{
     orders(func: eq(order_id, "${order_id}")) @filter(type(PrimaryOrder)) {
       uid
@@ -36,7 +36,7 @@ async function checkTransactionStatus({body}) {
   }
 }
 
-async function pushTransactionStatus({params, body}) {
+async function pushTransactionStatus ({params, body}) {
   if(!checkSignature(params.gateway, body)) {
     throw {
       statusCode: 400,
@@ -44,8 +44,10 @@ async function pushTransactionStatus({params, body}) {
       payload: body
     }
   }
+
   const { order_id, error_code } = body
-  const response = await db.upsert({
+
+  const {result} = await db.upsert({
     query: `{
       ods as result(func: eq(order_id, "${order_id}")) @filter(type(PrimaryOrder)) {
         uid
@@ -58,29 +60,32 @@ async function pushTransactionStatus({params, body}) {
       order_status: 1 //chuyển đơn đã tạo trạng thái init thành pending.
     }
   })
-  const [{uid}] = response.getJson().result
 
-  syncTrigger('order', uid, order_id, 'push_transaction_status')
+  const uid = result[0]?.uid
+
+  if(uid) {
+    syncTrigger('order', uid, order_id, 'push_transaction_status')
+  }
 
   return body
 }
 
-async function pushOrderStatus({body}) {
+async function pushOrderStatus ({body}) {
   let { order_id, order_status, reason, notes } = body
 
-  if(!isOrderId(order_id) || typeof order_status === 'undefined') {
+  if(!isOrderId(order_id) || typeof order_status !== 'number') {
     throw { statusCode: 400, message: "not meeting the requirements" }
   }
 
-  if (order_status === 6 && (typeof reason === 'undefined' || reason === '')) {
-    if (typeof notes === 'undefined' || notes === '') {
+  if (order_status === 6 && !reason) {
+    if (!notes) {
       throw { statusCode: 400, message: "Vui lòng cho biết lý do huỷ đơn" }
     } else {
       reason = notes
     }
   }
 
-  const { result: [{uid}] } = await db.upsert({
+  const {result} = await db.upsert({
     query: `{
       ods as result(func: eq(order_id, "${order_id}")) @filter(type(PrimaryOrder)) {
         uid
@@ -102,22 +107,26 @@ async function pushOrderStatus({body}) {
         reason
       }
     ]
-  }).then(res => res.getJson())
+  })
 
-  syncTrigger('order', uid, order_id, 'push_order_status')
+  const uid = result[0]?.uid
+
+  if(uid) {
+    syncTrigger('order', uid, order_id, 'push_order_status')
+  }
 
   return body
 }
 
-async function pushSupplierOrderStatus({params, body}) {
+async function pushSupplierOrderStatus ({params, body}) {
   const { supplier_id } = params
   const { order_id, order_status } = body
 
-  if(!isSubOrderId(order_id) || typeof order_status === 'undefined' || typeof supplier_id === 'undefined') {
+  if(!isSubOrderId(order_id) || (order_status ?? true) || !supplier_id) {
     throw { statusCode: 400, message: "not meeting the requirements" }
   }
 
-  const { result: [{uid}] } = await db.upsert({
+  const {result} = await db.upsert({
     query: `{
       od as result(func: eq(order_id, "${order_id}")) @filter(type(Order) AND eq(partner_id, ${supplier_id})) {
         uid
@@ -128,8 +137,9 @@ async function pushSupplierOrderStatus({params, body}) {
       uid: "uid(od)",
       order_status
     }
-  }).then(res => res.getJson())
-  db.upsert({
+  })
+
+  await db.upsert({
     query: `{
       var(func:eq(order_id,${order_id})) {
         ~sub_orders {
@@ -148,8 +158,10 @@ async function pushSupplierOrderStatus({params, body}) {
       order_status: "val(min_status)"
     }
   })
-  
-  if (typeof uid !== 'undefined') {
+
+  const uid = result[0]?.uid
+
+  if (uid) {
     syncTrigger('order', uid, order_id, 'push_order_status')
   }
 

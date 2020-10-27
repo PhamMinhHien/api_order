@@ -1,15 +1,15 @@
 "use strict"
 
 const db = mrequire('./services/tvcdb')
-const { uid, createUidMap } = mrequire('./utils')
+const { createUidMap } = mrequire('./utils')
 
-async function listCartItems({body}) {
+async function listCartItems ({body}) {
 
   if(!body || !Array.isArray(body.items)) {
     throw { statusCode: 400, message: "What are you doing here?" }
   }
 
-  const items_uids =  body.items.map(i=>i.uid).join(',')
+  const items_uids = body.items.map(i => i.uid).join(',')
 
   const { items } = await db.query(`{
     items(func: uid(${items_uids})) {

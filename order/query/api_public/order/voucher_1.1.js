@@ -1,12 +1,8 @@
-
 const db = mrequire('./services/tvcdb')
 const { isUid } = mrequire('./utils')
-const prodFragment = mrequire('./fragments/product')
 const prodFilter = mrequire('./fragments/productFilter')
-const parseProduct = mrequire('./services/product-parser')
-const {listVoucher} = require('./voucher')
 
-async function applyVoucherV2({body}) {
+async function applyVoucherV2 ({body}) {
   const order = body
   const { voucher_code, items, customer_id } = order
   const isInvalidSubmit = (
@@ -51,7 +47,7 @@ async function applyVoucherV2({body}) {
   const pu = items.map(i => i.uid).join(',')
 
   if (voucher_code && voucher_code !== "") {
-    const { 
+    const {
       rsVoucher: [voucher],
       all_items
     } = await db.query(`{
@@ -86,7 +82,7 @@ async function applyVoucherV2({body}) {
 
     const time = new Date().getTime()
 
-    const { 
+    const {
       rsVoucher,
       all_items
     } = await db.query(`{
@@ -114,9 +110,7 @@ async function applyVoucherV2({body}) {
         ${productFragment}
       }
     }`)
-    rsVoucher && rsVoucher.map(voucher => {
-      return processVoucher(voucher, items, customer_id, voucher.voucher_usage && voucher.voucher_usage[0], voucher.highlight_products, voucher.collection_products, all_items)
-    })
+    rsVoucher && rsVoucher.map(voucher => processVoucher(voucher, items, customer_id, voucher.voucher_usage && voucher.voucher_usage[0], voucher.highlight_products, voucher.collection_products, all_items))
     let max_value = 0
     let best_voucher = {}
     for(let i = 0; i < rsVoucher.length; i++) {
@@ -141,7 +135,7 @@ async function applyVoucherV2({body}) {
   }
 }
 
-function processVoucher(voucher, items, customer_id, voucher_usage, highlight_products, collection_products, all_items) {
+function processVoucher (voucher, items, customer_id, voucher_usage, highlight_products, collection_products, all_items) {
 
   let check_time = false
 
@@ -162,7 +156,7 @@ function processVoucher(voucher, items, customer_id, voucher_usage, highlight_pr
         message: !is_redeemed ? "Mã khuyến mãi không hợp lệ" : "Mã khuyến mãi đã hết lượt sử dụng"
       }
     } else {
-      const {voucher_value, applied_value, applied_items, error_msg} = checkConditions(voucher, items, highlight_products, collection_products, all_items)
+      const {applied_value, applied_items, error_msg} = checkConditions(voucher, items, highlight_products, collection_products, all_items)
       voucher.applied_value = applied_value
       if (applied_items?.length <= 0) {
         return {
@@ -191,7 +185,7 @@ function processVoucher(voucher, items, customer_id, voucher_usage, highlight_pr
 }
 
 
-function checkTargetType(voucher, voucher_usage, customer_id) {
+function checkTargetType (voucher, voucher_usage, customer_id) {
   let check_target = false
   let is_redeemed = false
   switch(voucher.target_type) {
@@ -219,43 +213,43 @@ function checkTargetType(voucher, voucher_usage, customer_id) {
   return {check_target, is_redeemed}
 }
 
-  /**
-   * Voucher có 3 loại 
+/**
+   * Voucher có 3 loại
    * 0: giảm giá trực tiếp. Thì coi như giá trị Voucher được giữ nguyên, cứ trừ trực tiếp lên tổng tiền đơn hàng
    * 2: là freeship, thì freeship cũng có giá trị tối đa là bao nhiêu. cũng thực hiện trừ như loại 0
-   * 
+   *
    * 1: giảm theo %, cái này cần tính nhiều. Phải lọc xem có bao nhiêu sản phẩm phù hợp. Tính tổng các sản phẩm đó rồi mới chia %
    * vd: sp1 có giá là 10000 (nằm trong danh sách được áp dụng)
    * sp2 có giá là 15000 (nằm trong danh sách được áp dụng)
    * sp3 có giá là 50000
    * total_amount = ( (10000 + 15000) * [số %] ) + 50000
-   * 
+   *
    * ví dụ % là 5
    * ( (10000 + 15000) * 5% ) + 50000 = 23750 + 50000 = 73750 vnd (ĐÚNG)
-   * 
+   *
    * Trường hợp sai khi
    * ( 10000 + 15000 + 50000 ) * 5% = 75000 - 3750 = 71250 vnd là (SAI)
    */
-function checkConditions(voucher, items, highlight_products, collection_products, all_items) {
+function checkConditions (voucher, items, highlight_products, collection_products, all_items) {
   const {reference_type} = voucher
- 
+
   /**
    * Kiểm tra loại tham chiếu của Voucher
    * 0 là tham chiếu đến product (1 hoặc nhiều)
    * 1 là tham chiếu đến collection (1 hoặc nhiều)
    * 2 là tham chiếu đến tất cả sản phẩm
    */
-  
+
   if (reference_type === 2) { // all products
     const {itemApproved, itemRejected} = lookupItemsApproved(all_items, items)
     const {applied_value, error_msg} = applyValue(itemApproved, voucher)
-      return {
-        voucher_value: voucher.voucher_value,
-        applied_value,
-        error_msg,
-        applied_items: itemApproved,
-        rejected_items: itemRejected
-      }
+    return {
+      voucher_value: voucher.voucher_value,
+      applied_value,
+      error_msg,
+      applied_items: itemApproved,
+      rejected_items: itemRejected
+    }
   } else if (reference_type === 1) { // collection
     const {itemApproved, itemRejected} = lookupItemsApproved(collection_products, items)
     const {applied_value, error_msg} = applyValue(itemApproved, voucher)
@@ -280,7 +274,7 @@ function checkConditions(voucher, items, highlight_products, collection_products
 }
 
 
-function checkExpiriedTime(voucher) {
+function checkExpiriedTime (voucher) {
   const toDay = new Date().getTime()
   const {start_at, stop_at} = voucher
   if (toDay > start_at && toDay <= stop_at) {
@@ -290,7 +284,7 @@ function checkExpiriedTime(voucher) {
   }
 }
 
-function lookupItemsApproved(products, order_items) {
+function lookupItemsApproved (products, order_items) {
   let itemApproved = []
   let itemRejected = []
   for(let i = 0; i < order_items.length; i++) {
@@ -307,7 +301,7 @@ function lookupItemsApproved(products, order_items) {
   }
 }
 
-function applyValue(itemApproved, voucher) {
+function applyValue (itemApproved, voucher) {
   let applied_value = 0
   let amount = 0
   let error_msg = ""
@@ -315,23 +309,21 @@ function applyValue(itemApproved, voucher) {
    * điều kiện là trong giỏ hàng phải có sản phẩm của ngành hàng mà voucher liên kết đến
    * giảm giá dựa trên giá trị của voucher hoặc tổng giá trị các sản phẩm (lấy vế nhỏ hơn)
    */
-  amount = itemApproved.reduce((total, {price_with_vat, discount, quantity = 1}) => {
-    return ((discount ? price_with_vat - price_with_vat*discount/100 : price_with_vat) * quantity) + total
-  }, 0)
+  amount = itemApproved.reduce((total, {price_with_vat, discount, quantity = 1}) => ((discount ? price_with_vat - price_with_vat * discount / 100 : price_with_vat) * quantity) + total, 0)
 
   if (voucher.voucher_type === 0 || voucher.voucher_type === 2) { //Giảm giá trực tiếp/ /FreeShipping
     if (!voucher.condition_type) { // Không có điều kiện
       applied_value = amount < voucher.voucher_value ? amount : voucher.voucher_value
     } else if (voucher.condition_type === 1) { //giá trị tối thiểu của đơn hàng
       if (amount >= voucher?.condition_value) {
-        applied_value = voucher.voucher_value 
+        applied_value = voucher.voucher_value
       } else {
         error_msg = "Hóa đơn chưa đạt giá trị tối thiểu"
         applied_value = 0
       }
-      // applied_value = voucher.condition_value 
-      //   && amount >= voucher.condition_value 
-      //     ? voucher.voucher_value 
+      // applied_value = voucher.condition_value
+      //   && amount >= voucher.condition_value
+      //     ? voucher.voucher_value
       //     : 0
     }
   } else if (voucher.voucher_type === 1) { //Giảm giá %
@@ -339,14 +331,14 @@ function applyValue(itemApproved, voucher) {
       applied_value = amount * voucher.voucher_value / 100
     } else if (voucher.condition_type === 1) { //giá trị tối thiểu của đơn hàng
       if (amount >= voucher?.condition_value) {
-        applied_value = amount * voucher.voucher_value / 100 
+        applied_value = amount * voucher.voucher_value / 100
       } else {
         error_msg = "Hóa đơn chưa đạt giá trị tối thiểu"
         applied_value = 0
       }
       // applied_value = voucher.condition_value
-      //   && amount >= voucher.condition_value 
-      //     ? amount * voucher.voucher_value / 100 
+      //   && amount >= voucher.condition_value
+      //     ? amount * voucher.voucher_value / 100
       //     : 0
     }
     /**
@@ -360,10 +352,10 @@ function applyValue(itemApproved, voucher) {
 }
 
 
-function parseDate(timestamp) {
+/* function parseDate(timestamp) {
   const date = new Date(timestamp)
   const year = String(date.getFullYear())
-  const month =  String(date.getMonth() + 1).padStart(2, "0")
+  const month = String(date.getMonth() + 1).padStart(2, "0")
   const day = String(date.getDate()).padStart(2, "0")
   const hour = String(date.getHours()).padStart(2, "0")
   const min = String(date.getMinutes()).padStart(2, "0")
@@ -375,9 +367,9 @@ function parseVouchers(vouchers) {
     v = parseVoucher(v)
   })
   return vouchers
-}
+} */
 
-function parseVoucher(v) {
+function parseVoucher (v) {
   if (Object.keys(v).length > 0) {
     const VoucherType = ["Giảm giá trực tiếp", "Giảm theo %", "Mã Miễn phí vận chuyển"]
     const ReferenceType = ["Sản phẩm", "Ngành hàng", "Tất cả sản phẩm"]
@@ -388,7 +380,7 @@ function parseVoucher(v) {
     // v.start_at = parseDate(v.start_at)
     // v.stop_at = parseDate(v.stop_at)
   }
-  
+
   return v
 }
 

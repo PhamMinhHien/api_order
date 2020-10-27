@@ -1,8 +1,15 @@
+"""
+Mutation và Query chính 
+"""
 type Query {
     searchByUid(id: String!) : Order 
     loadMoreOrder(number: Int!, offset: Int!) : [Order]
     listOrder(number: Int!, page: Int!, filter: String) : ListOrderFilter
+    """  Api public  """
 
+
+    """ Order """ 
+    submitOrder(obj: ParamsOrder) : ResultOrder
 }
 type Mutation {
     createOrder(input : orderInput) : Order 
@@ -32,4 +39,72 @@ type Order {
 type ListOrderFilter {
     totalCount: Int!
     data: [Order]!
+}
+
+"""
+Type support cho cartItems 
+""" 
+type Result {
+    statusCode: Int!,
+    data: [Product]!
+}
+type Product { 
+    uid: String!
+    sku_id: String
+    parent_sku_id: String
+    product_name: String
+    color: String
+    image_cover: String
+    image_highlight: String
+}
+
+type CartItem {
+    uid: String
+    quantity: Int
+}
+
+"""
+Type for Order 
+"""
+type ResultOrder {
+    statusCode: Int
+    order_id: String
+    amount: Int
+}
+
+type ParamsOrder {
+    pay_gateway: String
+    platform: String
+    customer_id : String
+    customer_name : String 
+    phone_number : String 
+    address_des : String 
+    address_type : Int
+    province : ID
+    district : ID
+    items : [Product]!
+    voucher_code : String
+    request_delivery_time : 
+    client_notes : String 
+    created_address_type : String 
+    created_address_des : String 
+    created_customer_name : String 
+    created_phone_number : String 
+    created_province : [ID]
+    created_district : [ID]
+}
+
+
+
+"""
+Dùng type ảo - interface 
+""" 
+interface TypeProduct {
+    uid: String!
+    sku_id: String
+    parent_sku_id: String
+    product_name: String
+    color: String
+    image_cover: String
+    image_highlight: String
 }
