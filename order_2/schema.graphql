@@ -1,0 +1,108 @@
+"""  Query """
+type Query {
+    searchByUid(id: String!) : Order 
+    loadMoreOrder(number: Int!, offset: Int!) : [Order]
+    listOrder(number: Int!, page: Int!, filter: String) : ListOrderFilter
+}
+
+
+""" Mutation Order """
+type Mutation {
+    createOrder(input : orderInput) : Order 
+    updateOrder(uid: String!, input: orderInput): Order
+}
+input orderInput {
+    uid : String!
+    order_id : String!
+    order_status : Int
+    notes: String 
+    customer_name : String!
+    phone_number : Int!
+    address_des : String!
+    shipping_code : Int!
+    reason : String!
+    shipping_partner_value : String
+    date_delivery_success : Int
+}
+
+type Order {
+    uid: String!
+    order_id: String
+    status_code: Int
+}
+
+type ListOrderFilter {
+    totalCount: Int!
+    data: [Order]!
+}
+
+
+interface TypeProduct {
+    uid: String!
+    sku_id: String
+    parent_sku_id: String
+    product_name: String
+    color: String
+    image_cover: String
+    image_highlight: String
+}
+
+""" Type support cho cartItems 
+type Result {
+    statusCode: Int!,
+    data: [Product]!
+}
+type Product { 
+    uid: String!
+    sku_id: String
+    parent_sku_id: String
+    product_name: String
+    color: String
+    image_cover: String
+    image_highlight: String
+}
+
+type CartItem {
+    uid: String
+    quantity: Int
+}
+
+type ResultOrder {
+    statusCode: Int
+    order_id: String
+    amount: Int
+}
+
+type ParamsOrder {
+    pay_gateway: String
+    platform: String
+    customer_id : String
+    customer_name : String 
+    phone_number : String 
+    address_des : String 
+    address_type : Int
+    province : ID
+    district : ID
+    items : [Product]!
+    voucher_code : String
+    request_delivery_time : 
+    client_notes : String 
+    created_address_type : String 
+    created_address_des : String 
+    created_customer_name : String 
+    created_phone_number : String 
+    created_province : [ID]
+    created_district : [ID]
+}
+
+
+interface TypeProduct {
+    uid: String!
+    sku_id: String
+    parent_sku_id: String
+    product_name: String
+    color: String
+    image_cover: String
+    image_highlight: String
+}
+"""
