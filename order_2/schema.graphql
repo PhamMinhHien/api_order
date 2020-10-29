@@ -1,19 +1,20 @@
-"""  Query """
 type Query {
     searchByUid(id: String!) : Order 
     loadMoreOrder(number: Int!, offset: Int!) : [Order]
     listOrder(number: Int!, page: Int!, filter: String) : ListOrderFilter
 }
-
-
-""" Mutation Order """
 type Mutation {
-    createOrder(input : orderInput) : Order 
-    updateOrder(uid: String!, input: orderInput): Order
+    createOrder(input : Order ) : Order 
+    updateOrder(uid: String!, input: OrderInput): Order
 }
-input orderInput {
-    uid : String!
-    order_id : String!
+
+""" Đầu vào """ 
+input OrderInput {
+    uid: ID!
+    input: OrderUpdateInterface
+}
+
+interface OrderUpdateInterface { 
     order_status : Int
     notes: String 
     customer_name : String!
@@ -28,7 +29,6 @@ input orderInput {
 type Order {
     uid: String!
     order_id: String
-    status_code: Int
 }
 
 type ListOrderFilter {
@@ -47,7 +47,6 @@ interface TypeProduct {
     image_highlight: String
 }
 
-""" Type support cho cartItems 
 type Result {
     statusCode: Int!,
     data: [Product]!
@@ -105,4 +104,3 @@ interface TypeProduct {
     image_cover: String
     image_highlight: String
 }
-"""

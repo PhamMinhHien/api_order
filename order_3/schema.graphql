@@ -1,0 +1,57 @@
+type Query {
+    hero(episode: Episode): Character
+    droid(id: ID!): Droid
+}
+type Mutation {
+    create(input: Starship) : Starship
+    update(id: ID!, input : Starship) : Starship
+}
+
+
+
+
+type Character {
+    name: String!
+    appearsIn: [Episode!]! 
+} 
+
+type Starship {
+    id: ID!
+    name: String!
+    length(unit: LengthUnit = METER): Float
+}
+
+enum Episode {
+    NEWHOPE
+    EMPIRE
+    JEDI
+}
+
+interface {
+    id: ID!
+    name: String!
+    friends: [Character]
+    appearsIn: [Episode]!
+}
+
+type Human implements Character {
+    id: ID!
+    name: String!
+    friends: [Character]
+    appearsIn: [Episode]!
+    starships: [Starship]
+    totalCredits: Int
+}
+  
+type Droid implements Character {
+    id: ID!
+    name: String!
+    friends: [Character]
+    appearsIn: [Episode]!
+    primaryFunction: String
+}
+
+
+
+union SearchResult = Human | Droid | Starship
+

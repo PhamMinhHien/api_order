@@ -8,11 +8,9 @@ type Query {
 """ Mutation Order """
 type Mutation {
     createOrder(input : orderInput) : Order 
-    updateOrder(uid: String!, input: orderInput): Order
+    updateOrder(uid: String!, input: orderInput): StatusCode
 }
 input orderInput {
-    uid : String!
-    order_id : String!
     order_status : Int  
     notes: String 
     customer_name : String!
@@ -21,14 +19,17 @@ input orderInput {
     shipping_code : Int!
     reason : String!
     shipping_partner_value : String
-    date_delivery_success : Int
+    date_delivery_success : Float
 }
 
 """ Type Order trả về chung tùy chọn """ 
 type Order {
     uid: String!
     order_id: String
-    status_code: Int
+}
+
+type StatusCode {
+    statusCode: Int!
 }
 
 type ListOrderFilter {

@@ -15,8 +15,9 @@ async function create_order(input){
 async function update_order(args){
     let uid = args.uid
     let input = args.input
-    const { result } = await mutate({uid,input})
-    return result
+    const { statusCode } = await mutate({uid,input})
+    console.log(statusCode);
+    return { statusCode }
 }
 async function search_by_uid(args){
     var uid = args.id

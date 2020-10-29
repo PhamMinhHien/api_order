@@ -15,6 +15,7 @@ try {
     app.use('/order', graphqlHTTP({
         schema: buildSchema(`${schema}`),
         rootValue: require('./order/root.js'),
+        // rootValue: require('./order_2/root.js'),
         graphiql: true,
     }));
 
