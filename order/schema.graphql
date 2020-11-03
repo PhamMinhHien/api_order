@@ -133,7 +133,11 @@ type Product {
 }
 
 type Address { 
-    
+    address_des: String
+    address_type: Int
+    district: Region
+    province: Region
+    display_order: Int
 }
 
 type ListOrderFilter {
