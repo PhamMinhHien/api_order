@@ -72,6 +72,19 @@ type Address {
     display_order: Int
 }
 
+type Region {
+    id: String
+    name: String
+    name_url: String
+    geo: String
+    geo_region: String
+    display_order: Int
+    areas: [Region]
+    ghn_id: Int
+    vn_all_province: Boolean
+    location_support: Boolean
+}
+
 type ListOrderFilter {
     totalCount: Int!
     data: [Order]!
