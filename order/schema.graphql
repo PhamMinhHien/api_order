@@ -1,14 +1,13 @@
 type Query {
-    searchByUid(id: String!) : Order 
-    loadMoreOrder(number: Int!, offset: Int!) : [Order]
-    listOrder(number: Int!, page: Int!, filter: String) : ListOrderFilter
+    searchByUid(id: String!) : PrimaryOrder 
+    loadMoreOrder(number: Int! offset: Int!) : [PrimaryOrder]
+    listOrder(number: Int! page: Int! filter: String) : ListOrderFilter
 }
 
 
 """ Mutation Order """
 type Mutation {
-    createOrder(input : orderInput) : Order 
-    updateOrder(uid: String!, input: orderInput): StatusCode
+    updateOrder(uid: String! input: orderInput): StatusCode
 }
 input orderInput {
     order_status : Int  
@@ -22,13 +21,89 @@ input orderInput {
     date_delivery_success : Float
 }
 
-""" Type Order trả về chung tùy chọn """ 
-type Order {
+""" Type all of order - Query """ 
+type PrimaryOrder {
     uid: String!
+    created_at: Int
     order_id: String
+    platform_id: String
+    order_customer: Customer
+    customer_name: String
+    phone_number: String
+    address_des: String
+    address_type: String
+    province: [Region]
+    district: [Region]
+    order_status: Int
+    pay_status: Int
+    sub_orders: [Order]
+    pay_gateway: String
+    voucher_code: String
+    voucher_value: Int
+    applied_value: Int
+    notes: String
+    client_notes: String
+    request_delivery_time: String
+    reason: String
+    date_delivery_success: Int
 }
 
-type StatusCode {
+type Order {
+    order_id: String     
+    partner_id: String!
+    order_partner: Partner
+    order_items: [OrderItem]
+    order_status: Int
+    pay_status: Int
+    notes: String     
+    had_sent_shipping: Boolean
+    shipping_code: String     
+    shipping_partner_value: String     
+    reason: String     
+    date_delivery_success: Int
+}
+
+type Partner {
+    id: String
+    partner_name: String
+}
+
+
+type Customer {
+    uid: String
+    gender: Int
+    customer_name: String     
+    email: String     
+    phone_number: String     
+    dateOfBirth: Int
+}
+
+type Region {
+    id: String     
+    name: String     
+    name_url: String     
+    geo: String     
+    geo_region: String     
+    display_order: Int
+    areas: [Region]
+    ghn_id: Int
+    vn_all_province: Boolean
+    location_support: Boolean
+}
+
+
+
+type OrderItem {
+    order_product: Product
+    product_name: String     
+    cost_price: Float
+    sell_price: Float
+    discount: Int
+    quantity: Int
+    promotion_desc: String     
+}
+
+type Product { 
     statusCode: Int!
     keywords: String
     free_shipping_tag: Boolean
@@ -72,20 +147,11 @@ type Address {
     display_order: Int
 }
 
-type Region {
-    id: String
-    name: String
-    name_url: String
-    geo: String
-    geo_region: String
-    display_order: Int
-    areas: [Region]
-    ghn_id: Int
-    vn_all_province: Boolean
-    location_support: Boolean
-}
-
 type ListOrderFilter {
     totalCount: Int!
-    data: [Order]!
+    data: [PrimaryOrder]!
+}
+
+type StatusCode {
+    statusCode: Int!
 }
