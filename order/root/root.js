@@ -1,4 +1,4 @@
-const { mutate , orderFilter , loadMore, getByUid } = require('./query/api_cms') // import những hàm truy vấn từ api-cms
+const { mutate , orderFilter , loadMore, getByUid } = require('../query/api_cms') // import những hàm truy vấn từ api-cms
 
 
 
